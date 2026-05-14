@@ -1,9 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/goal_provider.dart';
+import '../utils/update_service.dart';
+import '../widgets/update_dialog.dart';
 import 'home/home_screen.dart';
 import 'home/photo_gallery_screen.dart';
 
@@ -26,7 +29,19 @@ class _MainScreenState extends State<MainScreen> {
         final dateStr = DateTime.now().toIso8601String().substring(0, 10);
         context.read<GoalProvider>().loadGoals(auth.currentUser!.id!, dateStr);
       }
+      _checkForUpdates();
     });
+  }
+
+  Future<void> _checkForUpdates() async {
+    if (kIsWeb) return;
+    final updateInfo = await UpdateService().checkForUpdate();
+    if (updateInfo != null && mounted) {
+      showDialog(
+        context: context,
+        builder: (_) => UpdateDialog(updateInfo: updateInfo),
+      );
+    }
   }
 
   @override
@@ -427,7 +442,9 @@ class _ProfileScreen extends StatelessWidget {
                 const Divider(height: 1),
                 _menuItem(Icons.file_download, '导出数据', trailing: const Text('即将推出', style: TextStyle(color: Colors.grey, fontSize: 13))),
                 const Divider(height: 1),
-                _menuItem(Icons.info_outline, '关于', trailing: const Text('v1.0.0', style: TextStyle(color: Colors.grey, fontSize: 13))),
+                _menuItem(Icons.info_outline, '关于', trailing: const Text('v1.1.0', style: TextStyle(color: Colors.grey, fontSize: 13))),
+                const Divider(height: 1),
+                _buildCheckUpdateItem(context),
               ],
             ),
           ),
@@ -459,6 +476,37 @@ class _ProfileScreen extends StatelessWidget {
       leading: Icon(icon, color: AppColors.primaryStart),
       title: Text(title),
       trailing: trailing ?? const Icon(Icons.chevron_right, color: Colors.grey),
+    );
+  }
+
+  Widget _buildCheckUpdateItem(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.system_update, color: AppColors.primaryStart),
+      title: const Text('检查更新'),
+      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+      onTap: () async {
+        // Show loading
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => const Center(child: CircularProgressIndicator()),
+        );
+
+        final updateInfo = await UpdateService().checkForUpdate();
+        if (!context.mounted) return;
+        Navigator.of(context).pop(); // dismiss loading
+
+        if (updateInfo != null) {
+          showDialog(
+            context: context,
+            builder: (_) => UpdateDialog(updateInfo: updateInfo),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('当前已是最新版本')),
+          );
+        }
+      },
     );
   }
 }
