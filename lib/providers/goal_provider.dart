@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../database/database_helper.dart';
 import '../models/goal.dart';
 import '../models/daily_record.dart';
+import '../utils/notification_service.dart';
 
 class GoalProvider extends ChangeNotifier {
   final DatabaseHelper _dbHelper = DatabaseHelper();
@@ -40,6 +41,9 @@ class GoalProvider extends ChangeNotifier {
       }
     }
 
+    // Schedule notifications for pending goals
+    _scheduleNotificationsForLoadedGoals();
+
     _calculateCompletionRate();
     notifyListeners();
   }
@@ -55,7 +59,12 @@ class GoalProvider extends ChangeNotifier {
 
   Future<void> addGoal(Goal goal) async {
     final id = await _dbHelper.insertGoal(goal);
-    _todayGoals.add(goal.copyWith(id: id));
+    final newGoal = goal.copyWith(id: id);
+    _todayGoals.add(newGoal);
+
+    // Schedule notification if goal has endTime
+    _scheduleNotificationForGoal(newGoal);
+
     _calculateCompletionRate();
     notifyListeners();
   }
@@ -73,6 +82,10 @@ class GoalProvider extends ChangeNotifier {
   Future<void> deleteGoal(int id) async {
     await _dbHelper.deleteGoal(id);
     _todayGoals.removeWhere((g) => g.id == id);
+
+    // Cancel notification for deleted goal
+    await NotificationService().cancelGoalReminder(id);
+
     _calculateCompletionRate();
     notifyListeners();
   }
@@ -89,6 +102,11 @@ class GoalProvider extends ChangeNotifier {
 
     if (newStatus == 'completed') {
       await _dbHelper.updateStreak(goal.id!);
+      // Cancel notification when goal is completed
+      await NotificationService().cancelGoalReminder(goal.id!);
+    } else {
+      // Re-schedule notification if marking as pending again
+      _scheduleNotificationForGoal(updatedGoal);
     }
 
     _calculateCompletionRate();
@@ -98,6 +116,44 @@ class GoalProvider extends ChangeNotifier {
   Future<void> loadRepeatGoals(int userId) async {
     _repeatGoals = await _dbHelper.getRepeatGoals(userId);
     notifyListeners();
+  }
+
+  /// Schedule notifications for all pending goals with endTime
+  void _scheduleNotificationsForLoadedGoals() {
+    for (final goal in _todayGoals) {
+      if (goal.status == 'pending' && goal.endTime != null && goal.id != null) {
+        _scheduleNotificationForGoal(goal);
+      }
+    }
+  }
+
+  /// Schedule a notification for a single goal
+  void _scheduleNotificationForGoal(Goal goal) {
+    if (goal.endTime == null || goal.id == null) return;
+    if (goal.status == 'completed') return;
+
+    try {
+      final timeParts = goal.endTime!.split(':');
+      final hour = int.parse(timeParts[0]);
+      final minute = int.parse(timeParts[1]);
+
+      final goalDate = DateTime.parse(goal.date);
+      final endDateTime = DateTime(
+        goalDate.year,
+        goalDate.month,
+        goalDate.day,
+        hour,
+        minute,
+      );
+
+      NotificationService().scheduleGoalReminder(
+        goal.id!,
+        goal.title,
+        endDateTime,
+      );
+    } catch (_) {
+      // Silently ignore parse errors
+    }
   }
 
   void _calculateCompletionRate() {

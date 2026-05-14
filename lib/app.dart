@@ -7,6 +7,7 @@ import 'screens/auth/register_screen.dart';
 import 'screens/main_screen.dart';
 import 'screens/goal/create_goal_screen.dart';
 import 'screens/goal/goal_detail_screen.dart';
+import 'screens/home/photo_gallery_screen.dart';
 import 'models/goal.dart';
 import 'theme/app_theme.dart';
 
@@ -33,6 +34,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/main': (context) => const MainScreen(),
+        '/photo/gallery': (context) => const PhotoGalleryScreen(),
       },
       onGenerateRoute: (settings) {
         final auth = WidgetsBinding.instance.rootElement != null

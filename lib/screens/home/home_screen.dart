@@ -5,6 +5,8 @@ import '../../models/goal.dart';
 import '../../widgets/goal_card.dart';
 import '../../widgets/progress_ring.dart';
 import '../goal/create_goal_screen.dart';
+import 'photo_section.dart';
+import 'photo_gallery_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final int userId;
@@ -102,6 +104,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   centerTitle: false,
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.photo_library_outlined),
+                      tooltip: '成长记录',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const PhotoGalleryScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
                 // Date selector
                 SliverToBoxAdapter(
@@ -110,6 +126,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Progress section
                 SliverToBoxAdapter(
                   child: _buildProgressSection(provider),
+                ),
+                // Photo section
+                SliverToBoxAdapter(
+                  child: PhotoSection(
+                    dateStr: _dateToString(provider.selectedDate),
+                  ),
                 ),
                 // Repeat tasks
                 if (provider.repeatGoals.isNotEmpty)

@@ -5,9 +5,14 @@ import 'app.dart';
 import 'providers/auth_provider.dart';
 import 'providers/goal_provider.dart';
 import 'providers/sub_task_provider.dart';
+import 'utils/notification_service.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize notification service
+  await NotificationService().initialize();
+  await NotificationService().requestPermissions();
 
   runApp(
     MultiProvider(

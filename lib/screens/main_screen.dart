@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/goal_provider.dart';
 import 'home/home_screen.dart';
+import 'home/photo_gallery_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
