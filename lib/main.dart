@@ -14,10 +14,13 @@ void main() async {
   await NotificationService().initialize();
   await NotificationService().requestPermissions();
 
+  final authProvider = AuthProvider();
+  await authProvider.checkLoginState();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider(create: (_) => GoalProvider()),
         ChangeNotifierProvider(create: (_) => SubTaskProvider()),
       ],

@@ -60,7 +60,7 @@ class GoalProvider extends ChangeNotifier {
   Future<void> addGoal(Goal goal) async {
     final id = await _dbHelper.insertGoal(goal);
     final newGoal = goal.copyWith(id: id);
-    _todayGoals.add(newGoal);
+    _todayGoals = [..._todayGoals, newGoal];
 
     // Schedule notification if goal has endTime
     _scheduleNotificationForGoal(newGoal);
@@ -73,6 +73,7 @@ class GoalProvider extends ChangeNotifier {
     await _dbHelper.updateGoal(goal);
     final index = _todayGoals.indexWhere((g) => g.id == goal.id);
     if (index != -1) {
+      _todayGoals = List<Goal>.from(_todayGoals);
       _todayGoals[index] = goal;
     }
     _calculateCompletionRate();
@@ -81,9 +82,8 @@ class GoalProvider extends ChangeNotifier {
 
   Future<void> deleteGoal(int id) async {
     await _dbHelper.deleteGoal(id);
-    _todayGoals.removeWhere((g) => g.id == id);
+    _todayGoals = _todayGoals.where((g) => g.id != id).toList();
 
-    // Cancel notification for deleted goal
     await NotificationService().cancelGoalReminder(id);
 
     _calculateCompletionRate();
@@ -97,15 +97,14 @@ class GoalProvider extends ChangeNotifier {
 
     final index = _todayGoals.indexWhere((g) => g.id == goal.id);
     if (index != -1) {
+      _todayGoals = List<Goal>.from(_todayGoals);
       _todayGoals[index] = updatedGoal;
     }
 
     if (newStatus == 'completed') {
       await _dbHelper.updateStreak(goal.id!);
-      // Cancel notification when goal is completed
       await NotificationService().cancelGoalReminder(goal.id!);
     } else {
-      // Re-schedule notification if marking as pending again
       _scheduleNotificationForGoal(updatedGoal);
     }
 
