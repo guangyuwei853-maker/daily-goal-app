@@ -1,6 +1,6 @@
 {
-  "version": "1.1.0",
-  "buildNumber": 2,
-  "changelog": "1. 新增每日拍照和成长视频功能\n2. 新增目标超时通知提醒\n3. 新增应用内检查更新",
+  "version": "1.2.0",
+  "buildNumber": 3,
+  "changelog": "1. 重复目标自动合并到今日目标列表\n2. 修复完成按钮动画反馈\n3. 修复登录状态持久化\n4. 新增应用内检查更新\n5. 每日拍照和成长视频\n6. 目标超时通知提醒",
   "downloadUrl": "https://github.com/guangyuwei853-maker/daily-goal-app/releases/latest/download/DailyGoal.apk"
 }
