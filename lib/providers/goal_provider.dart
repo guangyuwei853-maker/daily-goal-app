@@ -8,12 +8,10 @@ class GoalProvider extends ChangeNotifier {
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
   List<Goal> _todayGoals = [];
-  List<Goal> _repeatGoals = [];
   DateTime _selectedDate = DateTime.now();
   double _completionRate = 0.0;
 
   List<Goal> get todayGoals => _todayGoals;
-  List<Goal> get repeatGoals => _repeatGoals;
   DateTime get selectedDate => _selectedDate;
   double get completionRate => _completionRate;
 
@@ -23,27 +21,49 @@ class GoalProvider extends ChangeNotifier {
   }
 
   Future<void> loadGoals(int userId, String date) async {
-    _todayGoals = await _dbHelper.getGoalsByDate(userId, date);
+    // 1. 获取当天直接创建的非重复目标
+    final directGoals = await _dbHelper.getGoalsByDate(userId, date);
 
-    // Generate daily records for repeat goals that don't have records yet
-    final repeats = await _dbHelper.getRepeatGoals(userId);
-    final existingRecords = await _dbHelper.getRecordsByDate(date);
-    final existingGoalIds = existingRecords.map((r) => r.goalId).toSet();
+    // 2. 获取所有重复目标，筛选出应在当天出现的
+    final allRepeats = await _dbHelper.getRepeatGoals(userId);
+    final todayRecords = await _dbHelper.getRecordsByDate(date);
+    final recordMap = <int, DailyRecord>{};
+    for (final r in todayRecords) {
+      recordMap[r.goalId] = r;
+    }
 
-    for (final goal in repeats) {
-      if (!existingGoalIds.contains(goal.id) && _shouldRepeatOnDate(goal, date)) {
-        final record = DailyRecord(
+    final List<Goal> repeatGoalsForToday = [];
+    for (final goal in allRepeats) {
+      if (!_shouldRepeatOnDate(goal, date)) continue;
+
+      // 跳过当天直接创建的（避免重复）
+      if (directGoals.any((g) => g.id == goal.id)) continue;
+
+      // 检查当天是否有完成记录
+      final record = recordMap[goal.id];
+      if (record != null) {
+        repeatGoalsForToday.add(goal.copyWith(
+          status: record.status,
+          date: date,
+        ));
+      } else {
+        // 创建当天的记录
+        await _dbHelper.insertRecord(DailyRecord(
           goalId: goal.id!,
           date: date,
           status: 'pending',
-        );
-        await _dbHelper.insertRecord(record);
+        ));
+        repeatGoalsForToday.add(goal.copyWith(
+          status: 'pending',
+          date: date,
+        ));
       }
     }
 
-    // Schedule notifications for pending goals
-    _scheduleNotificationsForLoadedGoals();
+    // 3. 合并：直接目标 + 重复目标
+    _todayGoals = [...directGoals, ...repeatGoalsForToday];
 
+    _scheduleNotificationsForLoadedGoals();
     _calculateCompletionRate();
     notifyListeners();
   }
@@ -62,7 +82,6 @@ class GoalProvider extends ChangeNotifier {
     final newGoal = goal.copyWith(id: id);
     _todayGoals = [..._todayGoals, newGoal];
 
-    // Schedule notification if goal has endTime
     _scheduleNotificationForGoal(newGoal);
 
     _calculateCompletionRate();
@@ -95,6 +114,22 @@ class GoalProvider extends ChangeNotifier {
     final updatedGoal = goal.copyWith(status: newStatus);
     await _dbHelper.updateGoal(updatedGoal);
 
+    // 如果是重复目标，同时更新 daily_record
+    if (goal.isRepeat) {
+      final dateStr = goal.date;
+      final records = await _dbHelper.getRecordsByDate(dateStr);
+      final record = records.where((r) => r.goalId == goal.id).firstOrNull;
+      if (record != null) {
+        await _dbHelper.updateRecord(DailyRecord(
+          id: record.id,
+          goalId: goal.id!,
+          date: dateStr,
+          status: newStatus,
+          completedAt: newStatus == 'completed' ? DateTime.now().toIso8601String() : null,
+        ));
+      }
+    }
+
     final index = _todayGoals.indexWhere((g) => g.id == goal.id);
     if (index != -1) {
       _todayGoals = List<Goal>.from(_todayGoals);
@@ -112,12 +147,6 @@ class GoalProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadRepeatGoals(int userId) async {
-    _repeatGoals = await _dbHelper.getRepeatGoals(userId);
-    notifyListeners();
-  }
-
-  /// Schedule notifications for all pending goals with endTime
   void _scheduleNotificationsForLoadedGoals() {
     for (final goal in _todayGoals) {
       if (goal.status == 'pending' && goal.endTime != null && goal.id != null) {
@@ -126,7 +155,6 @@ class GoalProvider extends ChangeNotifier {
     }
   }
 
-  /// Schedule a notification for a single goal
   void _scheduleNotificationForGoal(Goal goal) {
     if (goal.endTime == null || goal.id == null) return;
     if (goal.status == 'completed') return;
@@ -138,21 +166,11 @@ class GoalProvider extends ChangeNotifier {
 
       final goalDate = DateTime.parse(goal.date);
       final endDateTime = DateTime(
-        goalDate.year,
-        goalDate.month,
-        goalDate.day,
-        hour,
-        minute,
+        goalDate.year, goalDate.month, goalDate.day, hour, minute,
       );
 
-      NotificationService().scheduleGoalReminder(
-        goal.id!,
-        goal.title,
-        endDateTime,
-      );
-    } catch (_) {
-      // Silently ignore parse errors
-    }
+      NotificationService().scheduleGoalReminder(goal.id!, goal.title, endDateTime);
+    } catch (_) {}
   }
 
   void _calculateCompletionRate() {

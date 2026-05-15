@@ -30,7 +30,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final provider = context.read<GoalProvider>();
     final dateStr = _dateToString(provider.selectedDate);
     provider.loadGoals(widget.userId, dateStr);
-    provider.loadRepeatGoals(widget.userId);
   }
 
   String _dateToString(DateTime date) {
@@ -87,7 +86,6 @@ class _HomeScreenState extends State<HomeScreen> {
             onRefresh: () async {
               await provider.loadGoals(
                   widget.userId, _dateToString(provider.selectedDate));
-              await provider.loadRepeatGoals(widget.userId);
             },
             child: CustomScrollView(
               slivers: [
@@ -133,11 +131,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     dateStr: _dateToString(provider.selectedDate),
                   ),
                 ),
-                // Repeat tasks
-                if (provider.repeatGoals.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: _buildRepeatTasksSection(provider),
-                  ),
                 // Today's goals header
                 SliverToBoxAdapter(
                   child: _buildGoalsHeader(provider),
@@ -260,102 +253,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildRepeatTasksSection(GoalProvider provider) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text(
-            '每日打卡 \u{1F525}',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-        ),
-        SizedBox(
-          height: 90,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: provider.repeatGoals.length,
-            itemBuilder: (context, index) {
-              final goal = provider.repeatGoals[index];
-              final isCompleted = goal.status == 'completed';
-              return Container(
-                width: 130,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isCompleted
-                      ? const Color(0xFF667eea).withOpacity(0.1)
-                      : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isCompleted
-                        ? const Color(0xFF667eea)
-                        : Colors.grey.shade200,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      goal.title,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      '连续7天',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.orange.shade700,
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: GestureDetector(
-                        onTap: () => provider.toggleGoalComplete(goal),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isCompleted
-                                ? const Color(0xFF667eea)
-                                : Colors.transparent,
-                            border: Border.all(
-                              color: isCompleted
-                                  ? const Color(0xFF667eea)
-                                  : Colors.grey.shade400,
-                              width: 2,
-                            ),
-                          ),
-                          child: isCompleted
-                              ? const Icon(Icons.check,
-                                  color: Colors.white, size: 14)
-                              : null,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
     );
   }
 
