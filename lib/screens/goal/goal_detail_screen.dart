@@ -15,10 +15,12 @@ class GoalDetailScreen extends StatefulWidget {
   State<GoalDetailScreen> createState() => _GoalDetailScreenState();
 }
 
-class _GoalDetailScreenState extends State<GoalDetailScreen> {
+class _GoalDetailScreenState extends State<GoalDetailScreen> with SingleTickerProviderStateMixin {
   final DatabaseHelper _dbHelper = DatabaseHelper();
   List<SubTask> _subtasks = [];
   late Goal _goal;
+  late AnimationController _animController;
+  late Animation<double> _scaleAnim;
 
   static const Map<String, Color> priorityColors = {
     'high': Color(0xFFFF6B6B),
@@ -50,7 +52,20 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
   void initState() {
     super.initState();
     _goal = widget.goal;
+    _animController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _scaleAnim = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
+    );
     _loadSubtasks();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadSubtasks() async {
@@ -75,13 +90,28 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
   }
 
   Future<void> _toggleGoalComplete() async {
-    final provider = context.read<GoalProvider>();
-    await provider.toggleGoalComplete(_goal);
+    final newStatus = _goal.status == 'completed' ? 'pending' : 'completed';
+
+    _animController.forward().then((_) => _animController.reverse());
+
     setState(() {
-      _goal = _goal.copyWith(
-        status: _goal.status == 'completed' ? 'pending' : 'completed',
-      );
+      _goal = _goal.copyWith(status: newStatus);
     });
+
+    final provider = context.read<GoalProvider>();
+    await provider.toggleGoalComplete(widget.goal);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(newStatus == 'completed' ? '🎉 目标已完成！' : '目标已恢复为进行中'),
+          backgroundColor: newStatus == 'completed' ? Colors.green : Colors.orange,
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    }
   }
 
   Future<void> _deleteGoal() async {
@@ -441,51 +471,47 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
           const SizedBox(height: 24),
 
           // Complete / Undo button
-          if (isCompleted)
-            OutlinedButton.icon(
-              onPressed: _toggleGoalComplete,
-              icon: const Icon(Icons.undo),
-              label: const Text('撤销完成'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.orange,
-                side: const BorderSide(color: Colors.orange),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            )
-          else
-            Container(
-              width: double.infinity,
-              height: 50,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                ),
-              ),
-              child: ElevatedButton.icon(
-                onPressed: _toggleGoalComplete,
-                icon: const Icon(Icons.check_circle_outline,
-                    color: Colors.white),
-                label: const Text(
-                  '完成目标',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+          ScaleTransition(
+            scale: _scaleAnim,
+            child: isCompleted
+                ? OutlinedButton.icon(
+                    onPressed: _toggleGoalComplete,
+                    icon: const Icon(Icons.undo),
+                    label: const Text('撤销完成'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.orange,
+                      side: const BorderSide(color: Colors.orange),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  )
+                : Container(
+                    width: double.infinity,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                      ),
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: _toggleGoalComplete,
+                      icon: const Icon(Icons.check_circle_outline, color: Colors.white),
+                      label: const Text(
+                        '完成目标',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
+          ),
           const SizedBox(height: 32),
         ],
       ),
