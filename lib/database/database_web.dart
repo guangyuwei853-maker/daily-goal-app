@@ -136,6 +136,13 @@ class DatabaseWeb implements DatabaseInterface {
   }
 
   @override
+  Future<List<Goal>> getAllGoalsByUserId(int userId) async {
+    await _ensureInitialized();
+    return _goals.where((g) => g['user_id'] == userId)
+        .map((g) => Goal.fromMap(g)).toList();
+  }
+
+  @override
   Future<int> insertSubTask(SubTask subTask) async {
     await _ensureInitialized();
     _subTaskIdCounter++;
@@ -176,6 +183,14 @@ class DatabaseWeb implements DatabaseInterface {
   }
 
   @override
+  Future<List<SubTask>> getAllSubTasksByUserId(int userId) async {
+    await _ensureInitialized();
+    final userGoalIds = _goals.where((g) => g['user_id'] == userId).map((g) => g['id']).toSet();
+    return _subTasks.where((s) => userGoalIds.contains(s['goal_id']))
+        .map((s) => SubTask.fromMap(s)).toList();
+  }
+
+  @override
   Future<int> insertRecord(DailyRecord record) async {
     await _ensureInitialized();
     _recordIdCounter++;
@@ -210,6 +225,14 @@ class DatabaseWeb implements DatabaseInterface {
   Future<List<DailyRecord>> getRecordsByGoalId(int goalId) async {
     await _ensureInitialized();
     return _dailyRecords.where((r) => r['goal_id'] == goalId)
+        .map((r) => DailyRecord.fromMap(r)).toList();
+  }
+
+  @override
+  Future<List<DailyRecord>> getAllRecordsByUserId(int userId) async {
+    await _ensureInitialized();
+    final userGoalIds = _goals.where((g) => g['user_id'] == userId).map((g) => g['id']).toSet();
+    return _dailyRecords.where((r) => userGoalIds.contains(r['goal_id']))
         .map((r) => DailyRecord.fromMap(r)).toList();
   }
 

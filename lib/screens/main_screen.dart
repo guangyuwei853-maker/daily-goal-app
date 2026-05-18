@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/goal_provider.dart';
+import '../providers/theme_provider.dart';
+import '../utils/export_service.dart';
 import '../utils/update_service.dart';
 import '../widgets/update_dialog.dart';
 import 'home/home_screen.dart';
@@ -404,6 +406,7 @@ class _ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
     final user = auth.currentUser;
 
     return Scaffold(
@@ -445,9 +448,22 @@ class _ProfileScreen extends StatelessWidget {
           Card(
             child: Column(
               children: [
-                _menuItem(Icons.dark_mode, '深色模式', trailing: const Text('即将推出', style: TextStyle(color: Colors.grey, fontSize: 13))),
+                ListTile(
+                  leading: const Icon(Icons.dark_mode, color: AppColors.primaryStart),
+                  title: const Text('深色模式'),
+                  trailing: Switch(
+                    value: themeProvider.isDarkMode,
+                    onChanged: (_) => themeProvider.toggleTheme(),
+                    activeColor: AppColors.primaryStart,
+                  ),
+                ),
                 const Divider(height: 1),
-                _menuItem(Icons.file_download, '导出数据', trailing: const Text('即将推出', style: TextStyle(color: Colors.grey, fontSize: 13))),
+                ListTile(
+                  leading: const Icon(Icons.file_download, color: AppColors.primaryStart),
+                  title: const Text('导出数据'),
+                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                  onTap: () => _showExportBottomSheet(context),
+                ),
                 const Divider(height: 1),
                 _menuItem(Icons.info_outline, '关于', trailing: Text('v${AppConfig.currentVersion}', style: const TextStyle(color: Colors.grey, fontSize: 13))),
                 const Divider(height: 1),
@@ -475,6 +491,67 @@ class _ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showExportBottomSheet(BuildContext context) {
+    final auth = context.read<AuthProvider>();
+    final userId = auth.currentUser?.id ?? 0;
+    final exportService = ExportService();
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: Text('选择导出格式', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.data_object, color: AppColors.primaryStart),
+                  title: const Text('导出为 JSON'),
+                  subtitle: const Text('完整备份，可重新导入'),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    final content = await exportService.exportToJson(userId);
+                    final filename = 'dailyflow_backup_${DateTime.now().toIso8601String().substring(0, 10)}.json';
+                    final path = await exportService.saveExportFile(content, filename);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(path != null ? '数据已导出到: $path' : '导出失败，请重试')),
+                      );
+                    }
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.table_chart, color: AppColors.primaryStart),
+                  title: const Text('导出为 CSV'),
+                  subtitle: const Text('可用 Excel 打开'),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    final content = await exportService.exportToCsv(userId);
+                    final filename = 'dailyflow_goals_${DateTime.now().toIso8601String().substring(0, 10)}.csv';
+                    final path = await exportService.saveExportFile(content, filename);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(path != null ? '数据已导出到: $path' : '导出失败，请重试')),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

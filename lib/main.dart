@@ -5,6 +5,7 @@ import 'app.dart';
 import 'providers/auth_provider.dart';
 import 'providers/goal_provider.dart';
 import 'providers/sub_task_provider.dart';
+import 'providers/theme_provider.dart';
 import 'utils/notification_service.dart';
 
 void main() async {
@@ -17,10 +18,14 @@ void main() async {
   final authProvider = AuthProvider();
   await authProvider.checkLoginState();
 
+  final themeProvider = ThemeProvider();
+  await themeProvider.loadTheme();
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: authProvider),
+        ChangeNotifierProvider.value(value: themeProvider),
         ChangeNotifierProvider(create: (_) => GoalProvider()),
         ChangeNotifierProvider(create: (_) => SubTaskProvider()),
       ],

@@ -138,6 +138,13 @@ class DatabaseNative implements DatabaseInterface {
   }
 
   @override
+  Future<List<Goal>> getAllGoalsByUserId(int userId) async {
+    final db = await database;
+    final maps = await db.query('goals', where: 'user_id = ?', whereArgs: [userId], orderBy: 'date DESC');
+    return maps.map((m) => Goal.fromMap(m)).toList();
+  }
+
+  @override
   Future<int> insertSubTask(SubTask subTask) async {
     final db = await database;
     return await db.insert('sub_tasks', subTask.toMap());
@@ -159,6 +166,16 @@ class DatabaseNative implements DatabaseInterface {
   Future<List<SubTask>> getSubTasksByGoalId(int goalId) async {
     final db = await database;
     final maps = await db.query('sub_tasks', where: 'goal_id = ?', whereArgs: [goalId], orderBy: 'order_num ASC');
+    return maps.map((m) => SubTask.fromMap(m)).toList();
+  }
+
+  @override
+  Future<List<SubTask>> getAllSubTasksByUserId(int userId) async {
+    final db = await database;
+    final maps = await db.rawQuery(
+      'SELECT st.* FROM sub_tasks st INNER JOIN goals g ON st.goal_id = g.id WHERE g.user_id = ? ORDER BY st.goal_id, st.order_num',
+      [userId],
+    );
     return maps.map((m) => SubTask.fromMap(m)).toList();
   }
 
@@ -185,6 +202,16 @@ class DatabaseNative implements DatabaseInterface {
   Future<List<DailyRecord>> getRecordsByGoalId(int goalId) async {
     final db = await database;
     final maps = await db.query('daily_records', where: 'goal_id = ?', whereArgs: [goalId], orderBy: 'date DESC');
+    return maps.map((m) => DailyRecord.fromMap(m)).toList();
+  }
+
+  @override
+  Future<List<DailyRecord>> getAllRecordsByUserId(int userId) async {
+    final db = await database;
+    final maps = await db.rawQuery(
+      'SELECT dr.* FROM daily_records dr INNER JOIN goals g ON dr.goal_id = g.id WHERE g.user_id = ? ORDER BY dr.date DESC',
+      [userId],
+    );
     return maps.map((m) => DailyRecord.fromMap(m)).toList();
   }
 

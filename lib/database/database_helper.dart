@@ -31,6 +31,8 @@ class DatabaseHelper implements DatabaseInterface {
   Future<List<Goal>> getGoalsByDate(int userId, String date) => _delegate.getGoalsByDate(userId, date);
   @override
   Future<List<Goal>> getRepeatGoals(int userId) => _delegate.getRepeatGoals(userId);
+  @override
+  Future<List<Goal>> getAllGoalsByUserId(int userId) => _delegate.getAllGoalsByUserId(userId);
 
   @override
   Future<int> insertSubTask(SubTask subTask) => _delegate.insertSubTask(subTask);
@@ -40,6 +42,8 @@ class DatabaseHelper implements DatabaseInterface {
   Future<int> deleteSubTask(int id) => _delegate.deleteSubTask(id);
   @override
   Future<List<SubTask>> getSubTasksByGoalId(int goalId) => _delegate.getSubTasksByGoalId(goalId);
+  @override
+  Future<List<SubTask>> getAllSubTasksByUserId(int userId) => _delegate.getAllSubTasksByUserId(userId);
 
   @override
   Future<int> insertRecord(DailyRecord record) => _delegate.insertRecord(record);
@@ -49,6 +53,8 @@ class DatabaseHelper implements DatabaseInterface {
   Future<List<DailyRecord>> getRecordsByDate(String date) => _delegate.getRecordsByDate(date);
   @override
   Future<List<DailyRecord>> getRecordsByGoalId(int goalId) => _delegate.getRecordsByGoalId(goalId);
+  @override
+  Future<List<DailyRecord>> getAllRecordsByUserId(int userId) => _delegate.getAllRecordsByUserId(userId);
 
   @override
   Future<Map<String, dynamic>?> getStreak(int goalId) => _delegate.getStreak(goalId);

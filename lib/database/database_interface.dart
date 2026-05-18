@@ -13,16 +13,19 @@ abstract class DatabaseInterface {
   Future<int> deleteGoal(int id);
   Future<List<Goal>> getGoalsByDate(int userId, String date);
   Future<List<Goal>> getRepeatGoals(int userId);
+  Future<List<Goal>> getAllGoalsByUserId(int userId);
 
   Future<int> insertSubTask(SubTask subTask);
   Future<int> updateSubTask(SubTask subTask);
   Future<int> deleteSubTask(int id);
   Future<List<SubTask>> getSubTasksByGoalId(int goalId);
+  Future<List<SubTask>> getAllSubTasksByUserId(int userId);
 
   Future<int> insertRecord(DailyRecord record);
   Future<int> updateRecord(DailyRecord record);
   Future<List<DailyRecord>> getRecordsByDate(String date);
   Future<List<DailyRecord>> getRecordsByGoalId(int goalId);
+  Future<List<DailyRecord>> getAllRecordsByUserId(int userId);
 
   Future<Map<String, dynamic>?> getStreak(int goalId);
   Future<void> updateStreak(int goalId);
