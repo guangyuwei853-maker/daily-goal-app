@@ -4,6 +4,7 @@ import '../../models/goal.dart';
 import '../../models/sub_task.dart';
 import '../../providers/goal_provider.dart';
 import '../../database/database_helper.dart';
+import 'template_selector.dart';
 
 class CreateGoalScreen extends StatefulWidget {
   final int userId;
@@ -134,6 +135,48 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
     });
   }
 
+  Future<void> _openTemplateSelector() async {
+    final result = await Navigator.push<TemplateSelectionResult>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const TemplateSelectorScreen(),
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        // 填充标题
+        _titleController.text = result.template.name;
+
+        // 填充分类
+        final category = result.template.category;
+        if (['work', 'study', 'fitness', 'life', 'other']
+            .contains(category)) {
+          _category = category;
+        }
+
+        // 清空已有子任务并导入模板子任务
+        for (final c in _subtaskControllers) {
+          c.dispose();
+        }
+        _subtaskControllers.clear();
+        for (final task in result.selectedSubTasks) {
+          _subtaskControllers.add(TextEditingController(text: task));
+        }
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('已导入模板：${result.template.name}'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      );
+    }
+  }
+
   Future<void> _saveGoal() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -260,7 +303,30 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                 return null;
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
+
+            // Template button
+            if (!isEditing)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: OutlinedButton.icon(
+                  onPressed: _openTemplateSelector,
+                  icon: const Icon(Icons.auto_fix_high,
+                      size: 18, color: Color(0xFF667eea)),
+                  label: const Text(
+                    '选择模板',
+                    style: TextStyle(color: Color(0xFF667eea)),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFF667eea)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 16),
+                  ),
+                ),
+              ),
 
             // Description
             _buildSectionLabel('描述'),
