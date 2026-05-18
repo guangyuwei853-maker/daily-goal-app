@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 
 import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
@@ -490,27 +491,43 @@ class _ProfileScreen extends StatelessWidget {
     return ListTile(
       leading: const Icon(Icons.system_update, color: AppColors.primaryStart),
       title: const Text('检查更新'),
-      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+      trailing: Text('v${AppConfig.currentVersion}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
       onTap: () async {
-        // Show loading
         showDialog(
           context: context,
           barrierDismissible: false,
           builder: (_) => const Center(child: CircularProgressIndicator()),
         );
 
-        final updateInfo = await UpdateService().checkForUpdate();
-        if (!context.mounted) return;
-        Navigator.of(context).pop(); // dismiss loading
+        String debugInfo = '';
+        try {
+          final url = AppConfig.updateCheckUrl;
+          debugInfo += '请求: $url\n';
+          final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
+          debugInfo += '状态码: ${response.statusCode}\n';
+          debugInfo += '响应: ${response.body.substring(0, response.body.length > 100 ? 100 : response.body.length)}\n';
 
-        if (updateInfo != null) {
-          showDialog(
-            context: context,
-            builder: (_) => UpdateDialog(updateInfo: updateInfo),
-          );
-        } else {
+          final updateInfo = await UpdateService().checkForUpdate();
+          if (!context.mounted) return;
+          Navigator.of(context).pop();
+
+          if (updateInfo != null) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => UpdateDialog(updateInfo: updateInfo),
+            );
+          } else {
+            debugInfo += '本地版本: ${AppConfig.currentVersion}\n结论: 已是最新';
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('当前已是最新版本\n$debugInfo'), duration: const Duration(seconds: 5)),
+            );
+          }
+        } catch (e) {
+          if (!context.mounted) return;
+          Navigator.of(context).pop();
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('当前已是最新版本')),
+            SnackBar(content: Text('检查失败: $e\n$debugInfo'), duration: const Duration(seconds: 8)),
           );
         }
       },

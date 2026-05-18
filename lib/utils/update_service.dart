@@ -20,9 +20,9 @@ class AppConfig {
   /// Set to empty string to disable update checking.
   /// When the repo is public, use:
   /// 'https://raw.githubusercontent.com/guangyuwei853-maker/daily-goal-app/main/version.json'
-  // jsDelivr CDN 国内可访问，自动镜像 GitHub 仓库内容
+  // Gitee API 国内稳定访问
   static const String updateCheckUrl =
-      'https://cdn.jsdelivr.net/gh/guangyuwei853-maker/daily-goal-app@main/version.json';
+      'https://gitee.com/api/v5/repos/MiYe-soft/daily-flow-update/contents/version.json';
 
   static const String currentVersion = '1.5.0';
   static const int currentBuildNumber = 9;
@@ -46,7 +46,18 @@ class UpdateService {
 
       if (response.statusCode != 200) return null;
 
-      final data = json.decode(response.body) as Map<String, dynamic>;
+      final responseBody = json.decode(response.body) as Map<String, dynamic>;
+
+      // Gitee API 返回 base64 编码的文件内容，需要解码
+      Map<String, dynamic> data;
+      if (responseBody.containsKey('content') && responseBody.containsKey('encoding')) {
+        final content = responseBody['content'] as String;
+        final decoded = utf8.decode(base64.decode(content.replaceAll('\n', '')));
+        data = json.decode(decoded) as Map<String, dynamic>;
+      } else {
+        data = responseBody;
+      }
+
       final remoteVersion = data['version'] as String? ?? '';
       final changelog = data['changelog'] as String? ?? '';
       final downloadUrl = data['downloadUrl'] as String? ?? '';
