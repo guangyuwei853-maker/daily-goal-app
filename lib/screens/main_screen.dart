@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -141,7 +144,7 @@ class _CalendarScreenState extends State<_CalendarScreen> {
                 ),
                 Text(
                   '$year年$month月',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyLarge?.color),
                 ),
                 IconButton(
                   icon: const Icon(Icons.chevron_right),
@@ -311,7 +314,7 @@ class _StatsScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    const Text('今日完成率', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                    Text('今日完成率', style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodySmall?.color)),
                     const SizedBox(height: 12),
                     Text('$rate%',
                         style: const TextStyle(
@@ -371,7 +374,7 @@ class _StatsScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     Text(
                       '坚持每天设定并完成小目标，积少成多！\n建议每天设定3-5个核心目标，保持专注。',
-                      style: TextStyle(color: Colors.grey.shade700, height: 1.6),
+                      style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color, height: 1.6),
                     ),
                   ],
                 ),
@@ -436,7 +439,7 @@ class _ProfileScreen extends StatelessWidget {
                           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 4),
                       Text('加入时间：${user?.createdAt.substring(0, 10) ?? '-'}',
-                          style: TextStyle(color: Colors.grey.shade600)),
+                          style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color)),
                     ],
                   ),
                 ],
@@ -463,6 +466,13 @@ class _ProfileScreen extends StatelessWidget {
                   title: const Text('导出数据'),
                   trailing: const Icon(Icons.chevron_right, color: Colors.grey),
                   onTap: () => _showExportBottomSheet(context),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.file_upload, color: AppColors.primaryStart),
+                  title: const Text('导入数据'),
+                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                  onTap: () => _showImportDialog(context),
                 ),
                 const Divider(height: 1),
                 _menuItem(Icons.info_outline, '关于', trailing: Text('v${AppConfig.currentVersion}', style: const TextStyle(color: Colors.grey, fontSize: 13))),
@@ -553,6 +563,87 @@ class _ProfileScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _showImportDialog(BuildContext context) async {
+    final auth = context.read<AuthProvider>();
+    final userId = auth.currentUser?.id ?? 0;
+    final exportService = ExportService();
+
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      final filePath = result.files.single.path;
+      if (filePath == null) return;
+
+      final file = File(filePath);
+      final jsonContent = await file.readAsString();
+
+      final validation = exportService.validateImportJson(jsonContent);
+      if (validation == null) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('文件格式无效，请选择 DailyFlow 导出的 JSON 文件')),
+          );
+        }
+        return;
+      }
+
+      final goalsCount = validation['goals_count'] as int;
+      final subTasksCount = validation['sub_tasks_count'] as int;
+
+      if (!context.mounted) return;
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('确认导入'),
+          content: Text('即将导入 $goalsCount 个目标和 $subTasksCount 个子任务。\n\n注意：导入将覆盖当前所有数据，请确保已备份。'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('确认导入', style: TextStyle(color: AppColors.primaryStart)),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed != true || !context.mounted) return;
+
+      final importedCount = await exportService.importFromJson(jsonContent, userId);
+
+      if (!context.mounted) return;
+
+      if (importedCount >= 0) {
+        // Reload goals
+        final goalProvider = context.read<GoalProvider>();
+        final dateStr = DateTime.now().toIso8601String().substring(0, 10);
+        await goalProvider.loadGoals(userId, dateStr);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('成功导入 $importedCount 个目标')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('导入失败，请检查文件格式')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('导入失败，请重试')),
+        );
+      }
+    }
   }
 
   Widget _menuItem(IconData icon, String title, {Widget? trailing}) {

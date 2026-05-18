@@ -270,19 +270,19 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF8F9FE),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         title: Text(
           isEditing ? '编辑目标' : '新建目标',
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: Theme.of(context).textTheme.bodyLarge?.color,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black87),
+          icon: Icon(Icons.arrow_back_ios, color: Theme.of(context).textTheme.bodyLarge?.color),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -348,7 +348,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.grey.shade200),
                       ),
@@ -363,7 +363,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                                 : '开始时间',
                             style: TextStyle(
                               color: _startTime != null
-                                  ? Colors.black87
+                                  ? Theme.of(context).textTheme.bodyLarge?.color
                                   : Colors.grey.shade500,
                             ),
                           ),
@@ -383,7 +383,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.grey.shade200),
                       ),
@@ -398,7 +398,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                                 : '结束时间',
                             style: TextStyle(
                               color: _endTime != null
-                                  ? Colors.black87
+                                  ? Theme.of(context).textTheme.bodyLarge?.color
                                   : Colors.grey.shade500,
                             ),
                           ),
@@ -444,7 +444,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.grey.shade200),
               ),
@@ -471,7 +471,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey.shade200),
                 ),
@@ -569,10 +569,10 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: Colors.black54,
+          color: Theme.of(context).textTheme.bodySmall?.color,
         ),
       ),
     );
@@ -583,7 +583,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
       hintText: hint,
       hintStyle: TextStyle(color: Colors.grey.shade400),
       filled: true,
-      fillColor: Colors.white,
+      fillColor: Theme.of(context).cardColor,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: Colors.grey.shade200),
@@ -615,7 +615,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? color.withOpacity(0.15) : Colors.white,
+            color: isSelected ? color.withOpacity(0.15) : Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected ? color : Colors.grey.shade200,
@@ -647,9 +647,9 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
       side: BorderSide(
         color: isSelected ? const Color(0xFF667eea) : Colors.grey.shade200,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).cardColor,
       labelStyle: TextStyle(
-        color: isSelected ? const Color(0xFF667eea) : Colors.black87,
+        color: isSelected ? const Color(0xFF667eea) : Theme.of(context).textTheme.bodyLarge?.color,
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
       ),
     );

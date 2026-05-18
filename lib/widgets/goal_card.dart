@@ -183,7 +183,7 @@ class _GoalCardState extends State<GoalCard> with SingleTickerProviderStateMixin
           curve: Curves.easeInOut,
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
-            color: _isCompleted ? Colors.grey.shade100 : Colors.white,
+            color: _isCompleted ? Theme.of(context).colorScheme.surfaceContainerHighest : Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(12),
             border: Border(
               left: BorderSide(color: _isCompleted ? Colors.grey.shade400 : borderColor, width: 4),
@@ -245,7 +245,7 @@ class _GoalCardState extends State<GoalCard> with SingleTickerProviderStateMixin
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 decoration: _isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
-                                color: _isCompleted ? Colors.grey : Colors.black87,
+                                color: _isCompleted ? Colors.grey : Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87,
                               ),
                               child: Text(widget.goal.title),
                             ),
@@ -397,7 +397,7 @@ class _GoalCardState extends State<GoalCard> with SingleTickerProviderStateMixin
                 style: TextStyle(
                   fontSize: 14,
                   decoration: subTask.isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
-                  color: subTask.isCompleted ? Colors.grey.shade400 : Colors.black87,
+                  color: subTask.isCompleted ? Colors.grey.shade400 : Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87,
                 ),
                 child: Text(subTask.title),
               ),

@@ -163,24 +163,24 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> with SingleTickerPr
     final completedSubtasks = _subtasks.where((s) => s.isCompleted).length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF8F9FE),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         title: Text(
           _goal.title,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: Theme.of(context).textTheme.bodyLarge?.color,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black87),
+          icon: Icon(Icons.arrow_back_ios, color: Theme.of(context).textTheme.bodyLarge?.color),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit_outlined, color: Colors.black54),
+            icon: Icon(Icons.edit_outlined, color: Theme.of(context).textTheme.bodySmall?.color),
             onPressed: () async {
               await Navigator.push(
                 context,
@@ -208,7 +208,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> with SingleTickerPr
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -351,12 +351,12 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> with SingleTickerPr
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     '描述',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -395,12 +395,12 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> with SingleTickerPr
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         '子任务',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                         ),
                       ),
                       Text(
@@ -468,7 +468,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> with SingleTickerPr
                                       : null,
                                   color: subtask.isCompleted
                                       ? Colors.grey
-                                      : Colors.black87,
+                                      : Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87,
                                 ),
                                 child: Text(subtask.title),
                               ),

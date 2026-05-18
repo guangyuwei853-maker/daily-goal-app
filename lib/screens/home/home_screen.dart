@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Consumer<GoalProvider>(
         builder: (context, provider, child) {
           final pendingGoals =
@@ -92,13 +92,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 // App Bar
                 SliverAppBar(
                   floating: true,
-                  backgroundColor: const Color(0xFFF8F9FE),
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                   elevation: 0,
-                  title: const Text(
+                  title: Text(
                     '每日目标',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                   ),
                   centerTitle: false,
@@ -193,14 +193,14 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           IconButton(
             onPressed: _previousDay,
-            icon: const Icon(Icons.chevron_left, color: Colors.black54),
+            icon: Icon(Icons.chevron_left, color: Theme.of(context).textTheme.bodySmall?.color),
           ),
           GestureDetector(
             onTap: () => _pickDate(context),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -212,17 +212,17 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Text(
                 _formatDate(provider.selectedDate),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
             ),
           ),
           IconButton(
             onPressed: _nextDay,
-            icon: const Icon(Icons.chevron_right, color: Colors.black54),
+            icon: Icon(Icons.chevron_right, color: Theme.of(context).textTheme.bodySmall?.color),
           ),
         ],
       ),
@@ -247,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
             '已完成 $completed/$total 个目标',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey.shade600,
+              color: Theme.of(context).textTheme.bodySmall?.color,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -261,12 +261,12 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
       child: Row(
         children: [
-          const Text(
+          Text(
             '今日目标',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           const SizedBox(width: 8),

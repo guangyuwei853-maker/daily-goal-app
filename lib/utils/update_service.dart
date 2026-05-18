@@ -24,8 +24,8 @@ class AppConfig {
   static const String updateCheckUrl =
       'https://gitee.com/api/v5/repos/MiYe-soft/daily-flow-update/contents/version.json';
 
-  static const String currentVersion = '1.6.0';
-  static const int currentBuildNumber = 11;
+  static const String currentVersion = '1.7.0';
+  static const int currentBuildNumber = 12;
 }
 
 class UpdateService {
