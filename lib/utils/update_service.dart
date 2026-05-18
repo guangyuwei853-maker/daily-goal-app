@@ -20,11 +20,12 @@ class AppConfig {
   /// Set to empty string to disable update checking.
   /// When the repo is public, use:
   /// 'https://raw.githubusercontent.com/guangyuwei853-maker/daily-goal-app/main/version.json'
+  // jsDelivr CDN 国内可访问，自动镜像 GitHub 仓库内容
   static const String updateCheckUrl =
-      'https://raw.githubusercontent.com/guangyuwei853-maker/daily-goal-app/main/version.json';
+      'https://cdn.jsdelivr.net/gh/guangyuwei853-maker/daily-goal-app@main/version.json';
 
-  static const String currentVersion = '1.4.2';
-  static const int currentBuildNumber = 7;
+  static const String currentVersion = '1.4.3';
+  static const int currentBuildNumber = 8;
 }
 
 class UpdateService {

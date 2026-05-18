@@ -1,6 +1,6 @@
 {
-  "version": "1.4.2",
-  "buildNumber": 7,
-  "changelog": "1. 优化更新弹窗，醒目展示更新内容\n2. 主任务完成时子任务自动全部完成\n3. 首页目标卡片支持展开/收起子任务",
+  "version": "1.4.3",
+  "buildNumber": 8,
+  "changelog": "1. 修复自动更新：切换国内CDN，解决网络不通问题\n2. 优化更新弹窗UI\n3. 主任务完成时子任务自动完成",
   "downloadUrl": "https://github.com/guangyuwei853-maker/daily-goal-app/releases/latest/download/DailyFlow.apk"
 }
