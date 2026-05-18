@@ -1,0 +1,6 @@
+{
+  "version": "1.5.0",
+  "buildNumber": 9,
+  "changelog": "1. 内置模板扩展到30个主题\n2. 新增戒烟、戒酒、改善睡眠等18个模板\n3. 主任务完成时子任务自动完成\n4. 修复自动更新网络问题",
+  "downloadUrl": "https://github.com/guangyuwei853-maker/daily-goal-app/releases/latest/download/DailyFlow.apk"
+}
