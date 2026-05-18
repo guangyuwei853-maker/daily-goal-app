@@ -1,6 +1,6 @@
 {
-  "version": "1.4.0",
-  "buildNumber": 5,
-  "changelog": "1. App更名为DailyFlow\n2. 今日目标卡片支持展开/收起子任务\n3. 子任务可直接在首页勾选完成\n4. 全部子任务完成自动标记主任务完成",
+  "version": "1.4.1",
+  "buildNumber": 6,
+  "changelog": "1. 主任务完成时子任务自动全部完成\n2. 首页和详情页行为统一",
   "downloadUrl": "https://github.com/guangyuwei853-maker/daily-goal-app/releases/latest/download/DailyFlow.apk"
 }
