@@ -442,7 +442,7 @@ class _ProfileScreen extends StatelessWidget {
                 const Divider(height: 1),
                 _menuItem(Icons.file_download, '导出数据', trailing: const Text('即将推出', style: TextStyle(color: Colors.grey, fontSize: 13))),
                 const Divider(height: 1),
-                _menuItem(Icons.info_outline, '关于', trailing: const Text('v1.1.0', style: TextStyle(color: Colors.grey, fontSize: 13))),
+                _menuItem(Icons.info_outline, '关于', trailing: Text('v${AppConfig.currentVersion}', style: const TextStyle(color: Colors.grey, fontSize: 13))),
                 const Divider(height: 1),
                 _buildCheckUpdateItem(context),
               ],
