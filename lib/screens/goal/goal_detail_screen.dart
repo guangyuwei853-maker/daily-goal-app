@@ -101,6 +101,22 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> with SingleTickerPr
     final provider = context.read<GoalProvider>();
     await provider.toggleGoalComplete(widget.goal);
 
+    // 主任务完成时，子任务全部跟着完成
+    if (newStatus == 'completed' && _subtasks.isNotEmpty) {
+      for (final subtask in _subtasks) {
+        if (!subtask.isCompleted) {
+          await _dbHelper.updateSubTask(SubTask(
+            id: subtask.id,
+            goalId: subtask.goalId,
+            title: subtask.title,
+            isCompleted: true,
+            orderNum: subtask.orderNum,
+          ));
+        }
+      }
+      await _loadSubtasks();
+    }
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

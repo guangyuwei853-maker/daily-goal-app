@@ -71,12 +71,42 @@ class _GoalCardState extends State<GoalCard> with SingleTickerProviderStateMixin
     super.dispose();
   }
 
-  void _handleToggle() {
+  void _handleToggle() async {
     _animController.forward().then((_) => _animController.reverse());
+    final willComplete = !_isCompleted;
     setState(() {
-      _isCompleted = !_isCompleted;
+      _isCompleted = willComplete;
     });
     widget.onToggleComplete();
+
+    // 主任务完成时，子任务全部跟着完成
+    if (willComplete && widget.goal.id != null) {
+      final db = DatabaseHelper();
+      final tasks = await db.getSubTasksByGoalId(widget.goal.id!);
+      for (final task in tasks) {
+        if (!task.isCompleted) {
+          await db.updateSubTask(SubTask(
+            id: task.id,
+            goalId: task.goalId,
+            title: task.title,
+            isCompleted: true,
+            orderNum: task.orderNum,
+          ));
+        }
+      }
+      // 刷新展开区域的子任务状态
+      if (_subTasksLoaded && mounted) {
+        setState(() {
+          _subTasks = tasks.map((t) => SubTask(
+            id: t.id,
+            goalId: t.goalId,
+            title: t.title,
+            isCompleted: true,
+            orderNum: t.orderNum,
+          )).toList();
+        });
+      }
+    }
   }
 
   Future<void> _loadSubTasks() async {
