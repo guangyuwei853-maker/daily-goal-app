@@ -24,8 +24,8 @@ class AppConfig {
   static const String updateCheckUrl =
       'https://cdn.jsdelivr.net/gh/guangyuwei853-maker/daily-goal-app@main/version.json';
 
-  static const String currentVersion = '1.4.3';
-  static const int currentBuildNumber = 8;
+  static const String currentVersion = '1.5.0';
+  static const int currentBuildNumber = 9;
 }
 
 class UpdateService {
