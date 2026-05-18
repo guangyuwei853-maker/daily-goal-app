@@ -1,6 +1,6 @@
 {
-  "version": "1.3.0",
-  "buildNumber": 4,
-  "changelog": "1. 新增目标模板功能：12个精选主题模板（减肥、阅读、早起、英语等）\n2. 新增AI智能生成：输入任意主题自动生成个性化子任务\n3. 创建目标时一键导入模板，子任务可自由勾选\n4. 模板支持搜索和分类筛选",
+  "version": "1.3.1",
+  "buildNumber": 5,
+  "changelog": "1. 测试应用内更新功能\n2. 验证更新弹窗展示效果",
   "downloadUrl": "https://github.com/guangyuwei853-maker/daily-goal-app/releases/latest/download/DailyGoal.apk"
 }
