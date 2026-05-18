@@ -92,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 16),
                         // Title
                         const Text(
-                          'DailyGoal',
+                          'DailyFlow',
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,

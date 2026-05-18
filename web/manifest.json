@@ -1,6 +1,6 @@
 {
-    "name": "daily_goal",
-    "short_name": "daily_goal",
+    "name": "DailyFlow",
+    "short_name": "DailyFlow",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

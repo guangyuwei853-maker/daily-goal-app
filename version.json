@@ -1,6 +1,6 @@
 {
-  "version": "1.3.0",
-  "buildNumber": 4,
-  "changelog": "1. 新增目标模板功能：12个精选主题模板\n2. 新增AI智能生成个性化子任务\n3. 创建目标时一键导入模板\n4. 修复关于页面版本号显示",
-  "downloadUrl": "https://github.com/guangyuwei853-maker/daily-goal-app/releases/latest/download/DailyGoal.apk"
+  "version": "1.4.0",
+  "buildNumber": 5,
+  "changelog": "1. App更名为DailyFlow\n2. 今日目标卡片支持展开/收起子任务\n3. 子任务可直接在首页勾选完成\n4. 全部子任务完成自动标记主任务完成",
+  "downloadUrl": "https://github.com/guangyuwei853-maker/daily-goal-app/releases/latest/download/DailyFlow.apk"
 }
