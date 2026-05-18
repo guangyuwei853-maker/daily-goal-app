@@ -35,12 +35,19 @@ class _MainScreenState extends State<MainScreen> {
 
   Future<void> _checkForUpdates() async {
     if (kIsWeb) return;
-    final updateInfo = await UpdateService().checkForUpdate();
-    if (updateInfo != null && mounted) {
-      showDialog(
-        context: context,
-        builder: (_) => UpdateDialog(updateInfo: updateInfo),
-      );
+    try {
+      debugPrint('[UpdateCheck] currentVersion=${AppConfig.currentVersion}, url=${AppConfig.updateCheckUrl}');
+      final updateInfo = await UpdateService().checkForUpdate();
+      debugPrint('[UpdateCheck] result=${updateInfo?.version ?? "no update"}');
+      if (updateInfo != null && mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => UpdateDialog(updateInfo: updateInfo),
+        );
+      }
+    } catch (e) {
+      debugPrint('[UpdateCheck] error: $e');
     }
   }
 

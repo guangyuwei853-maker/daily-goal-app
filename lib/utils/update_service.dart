@@ -23,8 +23,8 @@ class AppConfig {
   static const String updateCheckUrl =
       'https://raw.githubusercontent.com/guangyuwei853-maker/daily-goal-app/main/version.json';
 
-  static const String currentVersion = '1.4.1';
-  static const int currentBuildNumber = 6;
+  static const String currentVersion = '1.4.2';
+  static const int currentBuildNumber = 7;
 }
 
 class UpdateService {

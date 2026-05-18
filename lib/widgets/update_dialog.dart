@@ -13,122 +13,231 @@ class UpdateDialog extends StatefulWidget {
   State<UpdateDialog> createState() => _UpdateDialogState();
 }
 
-class _UpdateDialogState extends State<UpdateDialog> {
+class _UpdateDialogState extends State<UpdateDialog>
+    with SingleTickerProviderStateMixin {
   bool _isDownloading = false;
+  late AnimationController _animController;
+  late Animation<double> _scaleAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _scaleAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOutBack);
+    _animController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: !_isDownloading,
-      child: AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // App icon
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.primaryStart, AppColors.primaryEnd],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Icon(Icons.rocket_launch, color: Colors.white, size: 32),
-            ),
-            const SizedBox(height: 16),
-            // Title
-            Text(
-              '发现新版本 v${widget.updateInfo.version}',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            // Changelog
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                '新版本特性：',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade800,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: _buildChangelog(widget.updateInfo.changelog),
-            ),
-            const SizedBox(height: 16),
-            // Progress indicator when downloading
-            if (_isDownloading)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 8),
-                child: LinearProgressIndicator(),
-              ),
-          ],
-        ),
-        actions: [
-          // "稍后再说" button
-          TextButton(
-            onPressed: _isDownloading ? null : () => Navigator.of(context).pop(),
-            child: Text(
-              '稍后再说',
-              style: TextStyle(color: Colors.grey.shade600),
-            ),
-          ),
-          // "立即更新" button with gradient
-          Container(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.primaryStart, AppColors.primaryEnd],
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: MaterialButton(
-              onPressed: _isDownloading ? null : _handleUpdate,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              child: const Text(
-                '立即更新',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildChangelog(String changelog) {
-    final lines = changelog.split('\n').where((l) => l.trim().isNotEmpty).toList();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: lines.map((line) {
-        // Remove leading number/bullet markers for display
-        final text = line.replaceFirst(RegExp(r'^\d+\.\s*'), '');
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 4),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      child: ScaleTransition(
+        scale: _scaleAnim,
+        child: Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('  •  ', style: TextStyle(color: AppColors.primaryStart)),
-              Expanded(
-                child: Text(
-                  text,
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade700, height: 1.4),
+              // 顶部渐变区域
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 28),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.primaryStart, AppColors.primaryEnd],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    const Icon(Icons.system_update, color: Colors.white, size: 48),
+                    const SizedBox(height: 12),
+                    const Text(
+                      '发现新版本',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'v${widget.updateInfo.version}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // 更新内容区域
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 4,
+                          height: 18,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryStart,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          '更新内容',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // Changelog items
+                    ..._buildChangelogItems(widget.updateInfo.changelog),
+                    const SizedBox(height: 4),
+                  ],
+                ),
+              ),
+
+              // 下载进度
+              if (_isDownloading)
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: LinearProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation(AppColors.primaryStart),
+                  ),
+                ),
+
+              // 按钮区域
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                child: Row(
+                  children: [
+                    // 稍后再说
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _isDownloading ? null : () => Navigator.of(context).pop(),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: BorderSide(color: Colors.grey.shade300),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          '稍后再说',
+                          style: TextStyle(color: Colors.grey.shade600, fontSize: 15),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // 立即更新
+                    Expanded(
+                      flex: 2,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [AppColors.primaryStart, AppColors.primaryEnd],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primaryStart.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: MaterialButton(
+                          onPressed: _isDownloading ? null : _handleUpdate,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                            '立即更新',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-        );
-      }).toList(),
+        ),
+      ),
     );
+  }
+
+  List<Widget> _buildChangelogItems(String changelog) {
+    final lines = changelog.split('\n').where((l) => l.trim().isNotEmpty).toList();
+    return lines.asMap().entries.map((entry) {
+      final text = entry.value.replaceFirst(RegExp(r'^\d+\.\s*'), '');
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 6),
+              width: 6,
+              height: 6,
+              decoration: const BoxDecoration(
+                color: AppColors.primaryStart,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                text,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade700,
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
   }
 
   Future<void> _handleUpdate() async {
