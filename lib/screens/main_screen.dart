@@ -10,7 +10,9 @@ import '../providers/auth_provider.dart';
 import '../providers/goal_provider.dart';
 import '../providers/theme_provider.dart';
 import '../utils/export_service.dart';
+import '../utils/notification_service.dart';
 import '../utils/update_service.dart';
+import '../widgets/reminder_dialog.dart';
 import '../widgets/update_dialog.dart';
 import 'home/home_screen.dart';
 import 'home/photo_gallery_screen.dart';
@@ -28,6 +30,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    _setupNotificationCallback();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final auth = context.read<AuthProvider>();
       if (auth.currentUser != null) {
@@ -36,6 +39,16 @@ class _MainScreenState extends State<MainScreen> {
       }
       _checkForUpdates();
     });
+  }
+
+  void _setupNotificationCallback() {
+    NotificationService().onForegroundNotification = (goalId, goalTitle) {
+      if (!mounted) return;
+      ReminderDialog.show(
+        context,
+        goalTitle: goalTitle.isNotEmpty ? goalTitle : '你有一个目标即将到期',
+      );
+    };
   }
 
   Future<void> _checkForUpdates() async {

@@ -243,23 +243,15 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
         }
       }
     } else {
-      await provider.addGoal(goal);
-      // Save subtasks for new goal
-      // The provider's addGoal returns, and the goal now has an id in todayGoals
-      final savedGoals = provider.todayGoals;
-      if (savedGoals.isNotEmpty) {
-        final savedGoal = savedGoals.last;
-        if (savedGoal.id != null) {
-          for (int i = 0; i < _subtaskControllers.length; i++) {
-            final text = _subtaskControllers[i].text.trim();
-            if (text.isNotEmpty) {
-              await _dbHelper.insertSubTask(SubTask(
-                goalId: savedGoal.id!,
-                title: text,
-                orderNum: i,
-              ));
-            }
-          }
+      final newGoalId = await provider.addGoal(goal);
+      for (int i = 0; i < _subtaskControllers.length; i++) {
+        final text = _subtaskControllers[i].text.trim();
+        if (text.isNotEmpty) {
+          await _dbHelper.insertSubTask(SubTask(
+            goalId: newGoalId,
+            title: text,
+            orderNum: i,
+          ));
         }
       }
     }

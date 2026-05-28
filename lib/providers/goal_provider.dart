@@ -77,7 +77,7 @@ class GoalProvider extends ChangeNotifier {
     return true;
   }
 
-  Future<void> addGoal(Goal goal) async {
+  Future<int> addGoal(Goal goal) async {
     final id = await _dbHelper.insertGoal(goal);
     final newGoal = goal.copyWith(id: id);
     _todayGoals = [..._todayGoals, newGoal];
@@ -86,6 +86,7 @@ class GoalProvider extends ChangeNotifier {
 
     _calculateCompletionRate();
     notifyListeners();
+    return id;
   }
 
   Future<void> updateGoal(Goal goal) async {
@@ -170,7 +171,9 @@ class GoalProvider extends ChangeNotifier {
       );
 
       NotificationService().scheduleGoalReminder(goal.id!, goal.title, endDateTime);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[Notification] Failed to schedule reminder for goal ${goal.id}: $e');
+    }
   }
 
   void _calculateCompletionRate() {

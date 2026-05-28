@@ -73,10 +73,11 @@ class NotificationService {
             sound: true,
           );
     } else if (defaultTargetPlatform == TargetPlatform.android) {
-      await _notifications
+      final androidPlugin = _notifications
           .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.requestNotificationsPermission();
+              AndroidFlutterLocalNotificationsPlugin>();
+      await androidPlugin?.requestNotificationsPermission();
+      await androidPlugin?.requestExactAlarmsPermission();
     }
   }
 
